@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* สไตล์เฉพาะสำหรับ Modal แก้ไข */
+    .edit-modal-content {
+      border: none;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .edit-header {
+      background-color: #212529;
+      color: white;
+      border: none;
+      padding: 1.2rem 1.5rem;
+    }
+    .edit-header .btn-close {
+      filter: invert(1);
+    }
+    .form-label-custom {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 0.4rem;
+    }
+    .input-edit-custom {
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      border: 1px solid #dee2e6;
+      transition: all 0.2s;
+    }
+    .input-edit-custom:focus {
+      border-color: #212529;
+      box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.1);
+    }
+    .btn-save-custom {
+      border-radius: 10px;
+      padding: 0.7rem;
+      font-weight: 500;
+      background-color: #212529;
+      border: none;
+      transition: all 0.3s;
+    }
+    .btn-save-custom:hover {
+      background-color: #000;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body>
+
+<button type="button" class="btn btn-primary" id="btnEdit" data-bs-toggle="modal" data-bs-target="#modalEdit" style="display:none">
+  Launch Edit Modal
+</button>
+
+<div class="modal fade" id="modalEdit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content edit-modal-content">
+      <div class="modal-header edit-header">
+        <h5 class="modal-title fw-bold" id="staticBackdropLabel"><i class="fas fa-user-edit me-2"></i>แก้ไขข้อมูล</h5>
+        <button type="button" id="btnclose2" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+
+        <form id="myFormEdit" onsubmit="editDataForm(this)">
+          <input type="text" id="status" name="status" hidden>
+          <input type="text" id="numid" name="numid" hidden>
+
+          <div class="row g-3">
+            <div class="col-12 mb-2">
+              <label class="form-label-custom"><i class="fa-solid fa-circle-user me-1 text-primary"></i> ชื่อ-นามสกุล</label>
+              <input type="text" class="form-control input-edit-custom" id="fname" name="fname" placeholder="กรอกชื่อ-นามสกุล" required>
+            </div>
+
+            <div class="col-12 mb-4">
+              <label class="form-label-custom"><i class="fa-solid fa-id-card me-1 text-primary"></i> ตำแหน่ง/สาขา</label>
+              <input type="text" class="form-control input-edit-custom" id="position" name="position" placeholder="กรอกตำแหน่งหรือสาขา" required>
+            </div>
+
+            <div class="col-12">
+              <button type="submit" class="btn btn-dark w-100 btn-save-custom" id="add">
+                <i class="fas fa-save me-2"></i> บันทึกการแก้ไข
+              </button>
+              
+              <button class="btn btn-dark w-100 btn-save-custom" type="button" id="add2" disabled style="display:none">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                กำลังบันทึกข้อมูล...
+              </button>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // เรียกข้อมูลเตรียมแก้ไข
+  function updateData(el) {
+    // ดึงค่าจากแถวในตาราง
+    var numid = el.parentNode.parentNode.cells[0].innerText;
+    var fname = el.parentNode.parentNode.cells[1].innerText;
+    var position = el.parentNode.parentNode.cells[2].innerText;
+    var status = el.parentNode.parentNode.cells[4].innerText; // ตรวจสอบ Index ของ Status ให้ตรงกับ DataTable (ใน Index.html เป็น index 4)
+
+    // นำค่าไปใส่ใน Form
+    document.getElementById('numid').value = numid;
+    document.getElementById('fname').value = fname;
+    document.getElementById('position').value = position;
+    document.getElementById('status').value = status;
+    
+    // คลิกปุ่มเปิด Modal
+    document.getElementById('btnEdit').click();
+  }
+
+  // ฟังก์ชันส่งข้อมูลแก้ไข
+  function editDataForm(obj) {
+    event.preventDefault();
+    let statusValue = document.getElementById('status').value;
+
+    // หากเคยสร้างเกียรติบัตรไปแล้ว (มี Link ใน Status) ให้แจ้งเตือนก่อน
+    if (statusValue !== "") {
+      Swal.fire({
+        title: 'ยืนยันการแก้ไข?',
+        text: "ข้อมูลนี้เคยสร้างเกียรติบัตรไปแล้ว หากแก้ไขจะต้องสร้างใหม่อีกครั้ง!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#212529',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'ตกลง, แก้ไขเลย',
+        cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          executeEdit(obj);
+        }
+      });
+    } else {
+      executeEdit(obj);
+    }
+  }
+
+  // ส่วนของการประมวลผลการส่งค่า
+  function executeEdit(obj) {
+    document.getElementById('btnclose2').click();
+    loadstart(); // ฟังก์ชัน Loading ในหน้าหลัก
+    
+    google.script.run.withSuccessHandler((data) => {
+      loadEnd();
+      // อัปเดตข้อมูลเฉพาะแถวที่แก้ไขใน DataTable โดยไม่ต้องโหลดใหม่ทั้งหน้า
+      table.row($(t).parents('tr')).data(data[0]).draw(false);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'แก้ไขข้อมูลสำเร็จ',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }).editData(obj);
+  }
+</script>
+
+</body>
+</html>
