@@ -1,10 +1,33 @@
-const scriptURL = 'https://script.google.com/macros/s/AKfycbz7bIjDslmXXLnJ0twEg73UhaWBJ-0PiMRDwjbgJckGMckXtYLpeCDUDNsbQYQ25MJH3Q/exec';
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ระบบเกียรติบัตร</title>
+</head>
+<body>
+    <h1>โครงการสัมมนาการสอนภาษาอังกฤษ</h1>
+    <button onclick="testSend()">ลองส่งข้อมูล</button>
 
-function sendData(data) {
-  fetch(scriptURL, {
-    method: 'POST',
-    mode: 'no-cors', // สำคัญ: เพื่อเลี่ยงปัญหาความปลอดภัยเบื้องต้น
-    cache: 'no-cache',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    <script>
+        // โค้ดที่คุณส่งรูปมา ให้เอามาวางตรงนี้ครับ
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbz7bIjDslmXXLnJ0twEg73UhaWBJ-0PiMRDwjbgJckGMckXtYLpeCDUDNsbQYQ25MJH3Q/exec';
+
+        function sendData(data) {
+          fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            cache: 'no-cache',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          })
+          .then(response => alert('ส่งข้อมูลสำเร็จ!'))
+          .catch(error => console.error('Error!', error));
+        }
+
+        function testSend() {
+            sendData({ message: "Hello from Vercel" });
+        }
+    </script>
+</body>
+</html>
