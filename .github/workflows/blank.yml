@@ -1,0 +1,10 @@
+const scriptURL = 'https://script.google.com/macros/s/AKfycbz7bIjDslmXXLnJ0twEg73UhaWBJ-0PiMRDwjbgJckGMckXtYLpeCDUDNsbQYQ25MJH3Q/exec';
+
+function sendData(data) {
+  fetch(scriptURL, {
+    method: 'POST',
+    mode: 'no-cors', // สำคัญ: เพื่อเลี่ยงปัญหาความปลอดภัยเบื้องต้น
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'application/json',
+    },
