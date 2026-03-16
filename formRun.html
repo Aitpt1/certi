@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    .run-form-container {
+      font-family: 'Prompt', sans-serif;
+    }
+    .custom-input {
+      border-radius: 10px;
+      text-align: center;
+      border: 1px solid #ced4da;
+      transition: all 0.3s;
+    }
+    .custom-input:focus {
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    .btn-custom {
+      border-radius: 50rem; /* ให้ปุ่มโค้งมน */
+      font-weight: 500;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-custom:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container-fluid run-form-container px-0">
+      <div class="alert alert-info border-0 shadow-sm rounded-3 mb-4 text-center" style="font-size: 14px;">
+        <i class="fa-solid fa-circle-info text-info me-1"></i> กรุณากำหนดแถวเพื่อเริ่มสร้างเกียรติบัตร
+      </div>
+
+      <form id="myForm" onsubmit="submitForm(this)">
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label text-muted fw-bold" style="font-size:13px;"><i class="fa-solid fa-angles-left"></i> แถวเริ่มต้น</label>
+            <input type="number" class="form-control custom-input py-2" id="start" name="start" placeholder="เช่น 2" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted fw-bold" style="font-size:13px;"><i class="fa-solid fa-angles-right"></i> แถวสุดท้าย</label>
+            <input type="number" class="form-control custom-input py-2" id="end" name="end" placeholder="เช่น 10" required>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2 mb-3">
+          <button type="submit" class="btn btn-primary btn-custom shadow-sm py-2" id="btn1">
+            <i class="fa-solid fa-bars-progress me-1"></i> บันทึกช่วงแถว
+          </button>
+          <button class="btn btn-primary btn-custom shadow-sm py-2" type="button" id="btn2" style="display:none" disabled>
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            กำลังบันทึกข้อมูล...
+          </button>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button onclick="runJPG()" id="btn3" class="btn btn-warning btn-custom shadow-sm py-2 text-dark">
+            <i class="fa-solid fa-user-pen me-1"></i> เริ่มสร้างเกียรติบัตร
+          </button>
+          <button class="btn btn-warning btn-custom shadow-sm py-2 text-dark" type="button" id="btn4" style="display:none" disabled>
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            กำลังสร้างเกียรติบัตร...
+          </button>
+        </div>
+      </form>
+  </div>
+
+<script>
+function submitForm(obj){
+  event.preventDefault();
+
+  let start = document.getElementById("start").value;
+  console.log(start);
+  let end = document.getElementById("end").value;
+  
+  if(start == '1' || end == '1'){
+    Swal.fire({
+      position: 'center',
+      icon: 'error',
+      title : 'เลือกแถว 1 ไม่ได้',
+      text : 'แถวที่ 1 มักจะเป็นหัวคอลัมน์ กรุณาเลือกแถวอื่นครับ',
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#d33'
+    });
+  } else if(parseInt(start) > parseInt(end)){ 
+     Swal.fire({
+      position: 'center',
+      icon: 'error',
+      title : 'ข้อมูลไม่ถูกต้อง',
+      text : 'แถวสุดท้ายต้องมากกว่าหรือเท่ากับแถวเริ่มต้นครับ',
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#d33'
+    });
+  } else {
+    document.getElementById("btn1").style.display="none";
+    document.getElementById("btn2").style.display="block";
+    google.script.run.withSuccessHandler(addsuccess).setData(obj);
+  }
+}
+
+function addsuccess(obj){
+  document.getElementById("btn2").style.display="none";
+  document.getElementById("btn1").style.display="block";
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'บันทึกช่วงแถวเรียบร้อย',
+    html: '<p class="mb-0">เริ่มจากแถวที่ <b>'+obj.start+'</b> ถึง <b>'+obj.end+'</b></p>',
+    confirmButtonColor: '<?!= color ?>',
+    confirmButtonText: 'ตกลง'
+  });
+}
+
+function runJPG(){
+  event.preventDefault();
+  document.getElementById("btn3").style.display="none";
+  document.getElementById("btn4").style.display="block";
+  google.script.run.withSuccessHandler(runsuccess).runJPG();
+}
+
+function runsuccess(){
+  document.getElementById("myForm").reset();
+  document.getElementById("btn4").style.display="none";
+  document.getElementById("btn3").style.display="block";
+  
+  // เรียกฟังก์ชันเพื่อโหลดข้อมูลใหม่ในตารางหลัก
+  if(typeof getAllData === "function") {
+    getAllData(admin);
+  }
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'สร้างเกียรติบัตรเรียบร้อย!',
+    showConfirmButton: false,
+    timer: 2000
+  });
+}
+</script>
+</body>
+
+</html>
